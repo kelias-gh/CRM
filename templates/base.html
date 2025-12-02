@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">CRM – Start 🔍</a>
+            <ul class="nav-links">
+                <li><a href="/">Start</a></li>
+                <li><a href="{{ url_for('customers.list_customers') }}">Kunden</a></li>
+                <li><a href="{{ url_for('orders.list_orders') }}">Bestellungen</a></li>
+                <li><a href="{{ url_for('contacts.list_contacts') }}">Kontakte</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 CRM System</p>
+        </div>
+    </footer>
+</body>
+</html>

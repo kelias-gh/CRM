@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Kundenliste{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Kundenliste</h1>
+    <a href="/" class="btn-back">← Zurück zur Startseite</a>
+</div>
+
+<section class="card">
+    <div class="card-header">
+        <h2>Kunden durchsuchen</h2>
+        <form action="{{ url_for('customers.list_customers') }}" method="get" class="search-form">
+            <input type="text" name="q" value="{{ query }}" placeholder="Name/E-Mail/Telefon ..." class="search-input">
+            <button type="submit" class="btn-search">⌕ Suchen</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Kund#</th>
+                    <th>Name</th>
+                    <th>E-Mail</th>
+                    <th>Telefon</th>
+                    <th>Letzter Kontakt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in customer_data %}
+                <tr onclick="window.location=`{{ url_for('customers.customer_detail', customer_id=item.customer.id) }}`">
+                    <td>{{ item.customer.id }}</td>
+                    <td>{{ item.customer.full_name }}</td>
+                    <td>{{ item.customer.email or '-' }}</td>
+                    <td>{{ item.customer.phone or '-' }}</td>
+                    <td>
+                        {% if item.last_contact %}
+                        {{ item.last_contact.contact_time.strftime('%Y-%m-%d') }}
+                        <span class="channel-badge channel-{{ item.last_contact.channel|lower }}">{{ item.last_contact.channel }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not customer_data %}
+    <div style="padding: 2rem; text-align: center; color: #7f8c8d;">
+        Keine Kunden gefunden.
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+}
+</style>
+{% endblock %}

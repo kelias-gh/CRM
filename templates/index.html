@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}CRM - Startseite{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>CRM – Start 🔍</h1>
+    
+    <div class="dashboard-grid">
+        <!-- Übersicht Kunden -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Übersicht Kunden</h2>
+                <form action="{{ url_for('customers.list_customers') }}" method="get" class="search-form">
+                    <input type="text" name="q" placeholder="Name/E-Mail/Telefon ..." class="search-input">
+                    <button type="submit" class="btn-search">⌕</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kund#</th>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Telefon</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr onclick="window.location=`{{ url_for('customers.customer_detail', customer_id=customer.id) }}`">
+                            <td>{{ customer.id }}</td>
+                            <td>{{ customer.last_name }}, {{ customer.first_name }}</td>
+                            <td>{{ customer.email or '-' }}</td>
+                            <td>{{ customer.phone or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('customers.list_customers') }}" class="btn-link">Alle Kunden anzeigen →</a>
+            </div>
+        </section>
+
+        <!-- Übersicht Bestellungen -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Übersicht Bestellungen</h2>
+                <form action="{{ url_for('orders.list_orders') }}" method="get" class="search-form">
+                    <input type="text" name="q" placeholder="Bestellnr./Kunde ..." class="search-input">
+                    <button type="submit" class="btn-search">⌕</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bestell#</th>
+                            <th>Datum</th>
+                            <th>Kunde</th>
+                            <th>Status</th>
+                            <th>Summe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>A-{{ order.id }}</td>
+                            <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
+                            <td class="text-right">{{ "%.2f"|format(order.total_amount) }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('orders.list_orders') }}" class="btn-link">Alle Bestellungen anzeigen →</a>
+            </div>
+        </section>
+
+        <!-- Übersicht Kontakte -->
+        <section class="card full-width">
+            <div class="card-header">
+                <h2>Übersicht Kontakte (global, chronologisch)</h2>
+                <div class="filter-buttons">
+                    <a href="{{ url_for('contacts.list_contacts') }}" class="btn-filter">Alle</a>
+                    <a href="{{ url_for('contacts.list_contacts', channel='Telefon') }}" class="btn-filter">Telefon</a>
+                    <a href="{{ url_for('contacts.list_contacts', channel='E-Mail') }}" class="btn-filter">E-Mail</a>
+                    <a href="{{ url_for('contacts.list_contacts', channel='Meeting') }}" class="btn-filter">Meeting</a>
+                    <a href="{{ url_for('contacts.list_contacts', channel='Chat') }}" class="btn-filter">Chat</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Datum/Zeit</th>
+                            <th>Kunde</th>
+                            <th>Art</th>
+                            <th>Betreff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contact in contacts %}
+                        <tr>
+                            <td>{{ contact.contact_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ contact.customer_name }}</td>
+                            <td><span class="channel-badge channel-{{ contact.channel|lower }}">{{ contact.channel }}</span></td>
+                            <td>{{ contact.subject or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('contacts.list_contacts') }}" class="btn-link">Alle Kontakte anzeigen →</a>
+            </div>
+        </section>
+    </div>
+
+    <div class="info-box">
+        <p><strong>Hinweis:</strong> „Übersicht Bestellungen" und „Übersicht Kontakte" sind <strong>global</strong> (über alle Kunden) und <strong>chronologisch</strong> (Datum ↓).</p>
+    </div>
+</div>
+{% endblock %}

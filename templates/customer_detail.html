@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ customer.full_name }} - Kundendetails{% endblock %}
+
+{% block content %}
+<div class="customer-detail">
+    <div class="detail-header">
+        <h1>Kunde: {{ customer.last_name }}, {{ customer.first_name }} <span class="customer-id">(Kund# {{ customer.id }})</span></h1>
+        <a href="{{ url_for('customers.list_customers') }}" class="btn-back">← Zurück zur Liste</a>
+    </div>
+
+    <div class="contact-info">
+        <p>
+            <strong>Kontakt:</strong> {{ customer.email or 'Keine E-Mail' }}, {{ customer.phone or 'Kein Telefon' }}
+            {% if last_contact %}
+            • <strong>Letzter Kontakt:</strong> {{ last_contact.contact_time.strftime('%Y-%m-%d') }} ({{ last_contact.channel }})
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-section">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Umsatz gesamt</div>
+                <div class="kpi-value">{{ "%.2f"|format(total_revenue) }} €</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Umsatz letztes Jahr (2024)</div>
+                <div class="kpi-value">{{ "%.2f"|format(last_year_revenue) }} €</div>
+            </div>
+            {% if range_revenue is not none %}
+            <div class="kpi-card highlight">
+                <div class="kpi-label">Umsatz Zeitraum</div>
+                <div class="kpi-value">{{ "%.2f"|format(range_revenue) }} €</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Datumsbereich Filter -->
+        <form method="get" class="date-filter-form">
+            <label>Datumsbereich:</label>
+            <input type="date" name="from" value="{{ date_from or '' }}" class="date-input">
+            <span>—</span>
+            <input type="date" name="to" value="{{ date_to or '' }}" class="date-input">
+            <button type="submit" class="btn-primary">Anwenden</button>
+            <a href="{{ url_for('customers.customer_detail', customer_id=customer.id) }}" class="btn-secondary">Zurücksetzen</a>
+        </form>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('orders')">Letzte Bestellungen</button>
+        <button class="tab-btn" onclick="showTab('contacts')">Letzte Kontakte</button>
+        <button class="tab-btn" onclick="showTab('master')">Stammdaten</button>
+    </div>
+
+    <!-- Tab: Letzte Bestellungen -->
+    <div id="tab-orders" class="tab-content active">
+        <h2>Letzte Bestellungen</h2>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Bestell#</th>
+                        <th>Datum</th>
+                        <th>Positionen</th>
+                        <th>Status</th>
+                        <th>Summe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in orders_with_items %}
+                    <tr>
+                        <td>A-{{ item.order.id }}</td>
+                        <td>{{ item.order.order_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ item.item_count }}</td>
+                        <td><span class="status-badge status-{{ item.order.status|lower }}">{{ item.order.status }}</span></td>
+                        <td class="text-right">{{ "%.2f"|format(item.order.total_amount) }} €</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Letzte Kontakte -->
+    <div id="tab-contacts" class="tab-content">
+        <h2>Letzte Kontakte (Timeline, neueste zuerst)</h2>
+        <div class="timeline">
+            {% for contact in recent_contacts %}
+            <div class="timeline-item">
+                <div class="timeline-date">{{ contact.contact_time.strftime('%Y-%m-%d') }}</div>
+                <div class="timeline-content">
+                    <span class="channel-badge channel-{{ contact.channel|lower }}">{{ contact.channel }}</span>
+                    <strong>{{ contact.subject or 'Kein Betreff' }}</strong>
+                    {% if contact.notes %}
+                    <p class="timeline-notes">{{ contact.notes }}</p>
+                    {% endif %}
+                    {% if contact.user %}
+                    <span class="timeline-user">(Mitarbeiter: {{ contact.user.name }})</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab: Stammdaten -->
+    <div id="tab-master" class="tab-content">
+        <h2>Stammdaten</h2>
+        <div class="master-data">
+            <div class="data-row">
+                <span class="data-label">Vorname:</span>
+                <span class="data-value">{{ customer.first_name }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Nachname:</span>
+                <span class="data-value">{{ customer.last_name }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">E-Mail:</span>
+                <span class="data-value">{{ customer.email or '-' }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Telefon:</span>
+                <span class="data-value">{{ customer.phone or '-' }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Erstellt am:</span>
+                <span class="data-value">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aktionen -->
+    <div class="actions">
+        <button class="btn-action" disabled>Neue Bestellung</button>
+        <button class="btn-action" disabled>Neuer Kontakt</button>
+        <button class="btn-action" disabled>Bearbeiten</button>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Alle Tabs und Buttons zurücksetzen
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Aktiven Tab und Button setzen
+    document.getElementById('tab-' + tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}
