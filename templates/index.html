@@ -1,128 +1,187 @@
 {% extends "base.html" %}
 
-{% block title %}CRM - Startseite{% endblock %}
+{% block title %}Übersicht - CRM System{% endblock %}
 
 {% block content %}
-<div class="dashboard">
-    <h1>CRM – Start 🔍</h1>
-    
-    <div class="dashboard-grid">
-        <!-- Übersicht Kunden -->
-        <section class="card">
+<div class="row">
+    <!-- Customer Overview -->
+    <div class="col-md-6">
+        <div class="card">
             <div class="card-header">
-                <h2>Übersicht Kunden</h2>
-                <form action="{{ url_for('customers.list_customers') }}" method="get" class="search-form">
-                    <input type="text" name="q" placeholder="Name/E-Mail/Telefon ..." class="search-input">
-                    <button type="submit" class="btn-search">⌕</button>
+                <h5><i class="fas fa-users"></i> Übersicht Kunden</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="search-box">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="customer_search" 
+                               placeholder="Name, E-Mail oder Telefon..." 
+                               value="{{ customer_search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </form>
-            </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Kund#</th>
-                            <th>Name</th>
-                            <th>E-Mail</th>
-                            <th>Telefon</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for customer in customers %}
-                        <tr onclick="window.location=`{{ url_for('customers.customer_detail', customer_id=customer.id) }}`">
-                            <td>{{ customer.id }}</td>
-                            <td>{{ customer.last_name }}, {{ customer.first_name }}</td>
-                            <td>{{ customer.email or '-' }}</td>
-                            <td>{{ customer.phone or '-' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer">
-                <a href="{{ url_for('customers.list_customers') }}" class="btn-link">Alle Kunden anzeigen →</a>
-            </div>
-        </section>
-
-        <!-- Übersicht Bestellungen -->
-        <section class="card">
-            <div class="card-header">
-                <h2>Übersicht Bestellungen</h2>
-                <form action="{{ url_for('orders.list_orders') }}" method="get" class="search-form">
-                    <input type="text" name="q" placeholder="Bestellnr./Kunde ..." class="search-input">
-                    <button type="submit" class="btn-search">⌕</button>
-                </form>
-            </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Bestell#</th>
-                            <th>Datum</th>
-                            <th>Kunde</th>
-                            <th>Status</th>
-                            <th>Summe</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                        <tr>
-                            <td>A-{{ order.id }}</td>
-                            <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
-                            <td>{{ order.customer_name }}</td>
-                            <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
-                            <td class="text-right">{{ "%.2f"|format(order.total_amount) }} €</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer">
-                <a href="{{ url_for('orders.list_orders') }}" class="btn-link">Alle Bestellungen anzeigen →</a>
-            </div>
-        </section>
-
-        <!-- Übersicht Kontakte -->
-        <section class="card full-width">
-            <div class="card-header">
-                <h2>Übersicht Kontakte (global, chronologisch)</h2>
-                <div class="filter-buttons">
-                    <a href="{{ url_for('contacts.list_contacts') }}" class="btn-filter">Alle</a>
-                    <a href="{{ url_for('contacts.list_contacts', channel='Telefon') }}" class="btn-filter">Telefon</a>
-                    <a href="{{ url_for('contacts.list_contacts', channel='E-Mail') }}" class="btn-filter">E-Mail</a>
-                    <a href="{{ url_for('contacts.list_contacts', channel='Meeting') }}" class="btn-filter">Meeting</a>
-                    <a href="{{ url_for('contacts.list_contacts', channel='Chat') }}" class="btn-filter">Chat</a>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Kund#</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Akt.</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr>
+                                <td>{{ customer.id }}</td>
+                                <td>{{ customer.full_name }}</td>
+                                <td>{{ customer.email or '-' }}</td>
+                                <td>
+                                    {% if customer.last_contact_days %}
+                                        {{ customer.last_contact_days }}d
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('customer_detail', customer_id=customer.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Keine Kunden gefunden</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Datum/Zeit</th>
-                            <th>Kunde</th>
-                            <th>Art</th>
-                            <th>Betreff</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for contact in contacts %}
-                        <tr>
-                            <td>{{ contact.contact_time.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ contact.customer_name }}</td>
-                            <td><span class="channel-badge channel-{{ contact.channel|lower }}">{{ contact.channel }}</span></td>
-                            <td>{{ contact.subject or '-' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer">
-                <a href="{{ url_for('contacts.list_contacts') }}" class="btn-link">Alle Kontakte anzeigen →</a>
-            </div>
-        </section>
+        </div>
     </div>
+    
+    <!-- Order Overview -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-cart"></i> Übersicht Bestellungen</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="search-box">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="order_search" 
+                               placeholder="Bestellnr. oder Kunde..." 
+                               value="{{ order_search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Bestell#</th>
+                                <th>Kunde</th>
+                                <th>Datum</th>
+                                <th>Summe</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order, customer in orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ customer.full_name }}</td>
+                                <td>{{ order.order_date.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ "%.2f"|format(order.total_amount) }} €</td>
+                                <td>
+                                    <span class="badge bg-{% if order.status == 'Bezahlt' %}success{% elif order.status == 'Storniert' %}danger{% else %}warning{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Keine Bestellungen gefunden</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="info-box">
-        <p><strong>Hinweis:</strong> „Übersicht Bestellungen" und „Übersicht Kontakte" sind <strong>global</strong> (über alle Kunden) und <strong>chronologisch</strong> (Datum ↓).</p>
+<!-- Contact Overview -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-comments"></i> Übersicht Kontakte</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="search-box">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <select class="form-select" name="contact_filter">
+                                <option value="">Alle Kanäle</option>
+                                <option value="Telefon" {% if contact_filter == 'Telefon' %}selected{% endif %}>Telefon</option>
+                                <option value="E-Mail" {% if contact_filter == 'E-Mail' %}selected{% endif %}>E-Mail</option>
+                                <option value="Meeting" {% if contact_filter == 'Meeting' %}selected{% endif %}>Meeting</option>
+                                <option value="Chat" {% if contact_filter == 'Chat' %}selected{% endif %}>Chat</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-filter"></i> Filtern
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Datum/Zeit</th>
+                                <th>Kunde</th>
+                                <th>Art</th>
+                                <th>Betreff</th>
+                                <th>Notizen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contact, customer in contacts %}
+                            <tr class="contact-item {{ contact.channel.lower() }}">
+                                <td>{{ contact.contact_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>{{ customer.full_name }}</td>
+                                <td>
+                                    <span class="badge bg-{% if contact.channel == 'Telefon' %}success{% elif contact.channel == 'E-Mail' %}warning{% elif contact.channel == 'Meeting' %}danger{% else %}info{% endif %}">
+                                        <i class="fas fa-{% if contact.channel == 'Telefon' %}phone{% elif contact.channel == 'E-Mail' %}envelope{% elif contact.channel == 'Meeting' %}users{% else %}comment{% endif %}"></i>
+                                        {{ contact.channel }}
+                                    </span>
+                                </td>
+                                <td>{{ contact.subject or '-' }}</td>
+                                <td>{{ contact.notes[:50] or '-' }}{% if contact.notes and contact.notes|length > 50 %}...{% endif %}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Keine Kontakte gefunden</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
