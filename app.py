@@ -134,6 +134,28 @@ def create_app():
                              start_date=start_date,
                              end_date=end_date)
     
+    @app.route('/customer/<int:customer_id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_customer(customer_id):
+        customer = Customer.query.get_or_404(customer_id)
+        
+        if request.method == 'POST':
+            # Update customer information
+            customer.first_name = request.form['first_name'].strip()
+            customer.last_name = request.form['last_name'].strip()
+            customer.email = request.form['email'].strip() or None
+            customer.phone = request.form['phone'].strip() or None
+            
+            try:
+                db.session.commit()
+                flash('Customer information updated successfully!', 'success')
+                return redirect(url_for('customer_detail', customer_id=customer.id))
+            except Exception as e:
+                db.session.rollback()
+                flash('Error updating customer information.', 'error')
+        
+        return render_template('edit_customer.html', customer=customer)
+    
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if request.method == 'POST':

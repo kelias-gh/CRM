@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}{{ customer.full_name }} - CRM System{% endblock %}
 
 {% block content %}
@@ -210,11 +209,16 @@
                 <button class="btn btn-info me-2">
                     <i class="fas fa-comment"></i> Neuer Kontakt
                 </button>
-                <button class="btn btn-warning">
+                 <a href="{{ url_for('edit_customer', customer_id=customer.id) }}" class="btn btn-warning">
                     <i class="fas fa-edit"></i> Bearbeiten
-                </button>
-            </div>
+                </a>
+           </div>
         </div>
     </div>
 </div>
+tiven Tab und Button setzen
+    document.getElementById('tab-' + tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
 {% endblock %}

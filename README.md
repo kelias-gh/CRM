@@ -1,32 +1,12 @@
-# Simple CRM System
+# CRM System - Deployment Guide
 
-A lightweight Customer Relationship Management system built with Flask, designed for educational purposes and small business use.
+## Quick Setup for PythonAnywhere
 
-## Features
-
-- **Customer Management**: Track customer information, contact details, and interaction history
-- **Order Management**: Manage customer orders with status tracking and revenue calculations
-- **Contact Logging**: Record all customer interactions (phone, email, meetings, chat)
-- **KPI Dashboard**: Visualize customer revenue, activity metrics, and performance indicators
-- **Search & Filter**: Find customers, orders, and contacts quickly
-- **Responsive Design**: Works on desktop and mobile devices
-
-## Technology Stack
-
-- **Backend**: Flask (Python web framework)
-- **Database**: SQLite (easily portable to MySQL/PostgreSQL)
-- **Frontend**: Bootstrap 5, Jinja2 templates
-- **Authentication**: Flask-Login
-- **Database ORM**: SQLAlchemy
-
-## Quick Start
-
-### 1. Installation
+### 1. Local Development Setup
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd crm-system
+# Clone or upload the files to your local machine
+cd /path/to/crm-project
 
 # Create virtual environment
 python -m venv venv
@@ -34,149 +14,154 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Setup database
+python setup_database.py
+
+# Run locally
+python app.py
 ```
 
-### 2. Database Setup
+### 2. PythonAnywhere Deployment
 
+#### Step 1: Upload Files
+1. Log in to [PythonAnywhere](https://www.pythonanywhere.com/)
+2. Go to "Files" tab
+3. Upload all files to your home directory:
+   - `app.py`
+   - `models.py`
+   - `config.py`
+   - `requirements.txt`
+   - `setup_database.py`
+   - The entire `templates/` directory
+
+#### Step 2: Create Virtual Environment
+1. Go to "Consoles" tab
+2. Start a new Bash console
+3. Run:
 ```bash
-# Initialize database with sample data
+mkvirtualenv --python=/usr/bin/python3.9 crm-env
+pip install -r requirements.txt
+```
+
+#### Step 3: Setup Database
+```bash
+# In the same bash console
 python setup_database.py
 ```
 
-### 3. Run the Application
+#### Step 4: Configure Web App
+1. Go to "Web" tab
+2. Click "Add a new web app"
+3. Choose "Flask" and select Python 3.9
+4. For the project path, use: `/home/yourusername/crm-env`
+5. In the WSGI configuration file, replace with:
 
+```python
+import sys
+sys.path.insert(0, '/home/yourusername')
+
+from app import create_app
+application = create_app()
+```
+
+#### Step 5: Static Files Mapping
+1. In the Web tab, scroll to "Static files"
+2. Add URL: `/static/` → Directory: `/home/yourusername/static`
+
+#### Step 6: Reload Web App
+1. Click the green "Reload" button
+2. Your CRM should be accessible at: `https://yourusername.pythonanywhere.com`
+
+### 3. Default Login Credentials
+
+- **Email**: `admin@crm.local`
+- **Password**: `admin123`
+
+### 4. Database Management
+
+#### Backup Database
 ```bash
-# Start the development server
-python app.py
-
-# Or use Flask command
-flask run
+# Download the database file
+# For SQLite: /home/yourusername/crm.db
 ```
 
-### 4. Access the Application
-
-Open your browser and go to: `http://localhost:5000`
-
-**Default Login:**
-- Email: `admin@crm.local`
-- Password: `admin123`
-
-## Database Schema
-
-The system uses the following database tables:
-
-- **customers**: Customer information
-- **orders**: Customer orders with status and amounts
-- **order_items**: Individual items within orders
-- **products**: Product catalog
-- **contacts**: Customer interaction history
-- **users**: System users with authentication
-
-## File Structure
-
-```
-crm-system/
-├── app.py              # Main Flask application
-├── models.py           # Database models
-├── config.py           # Configuration settings
-├── setup_database.py   # Database initialization script
-├── requirements.txt    # Python dependencies
-├── templates/          # HTML templates
-│   ├── base.html      # Base template
-│   ├── index.html     # Dashboard
-│   ├── login.html     # Login page
-│   └── customer_detail.html  # Customer details
-└── DEPLOYMENT_GUIDE.md # Deployment instructions
-```
-
-## Configuration
-
-Environment variables can be set in `.env` file:
-
-```env
-SECRET_KEY=your-secret-key
-DATABASE_URL=sqlite:///crm.db
-FLASK_ENV=development
-```
-
-## Deployment
-
-For production deployment, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions on:
-- PythonAnywhere deployment
-- Production configuration
-- Security considerations
-- Troubleshooting
-
-## Customization
-
-### Adding New Features
-
-1. **Database**: Add new models in `models.py`
-2. **Routes**: Add new routes in `app.py`
-3. **Templates**: Create new HTML templates in `templates/`
-4. **Static Files**: Add CSS/JS files and update templates
-
-### Styling
-
-The application uses Bootstrap 5. Custom styles can be added to:
-- `templates/base.html` (global styles)
-- Individual templates (page-specific styles)
-
-## Development
-
-### Running Tests
+#### Reset Database
 ```bash
-# Install development dependencies
-pip install pytest
-
-# Run tests
-pytest
+# In PythonAnywhere Bash console
+workon crm-env
+python setup_database.py
 ```
 
-### Database Migrations
-```bash
-# Initialize migration repository
-flask db init
+### 5. Environment Variables (Optional)
 
-# Create migration
-flask db migrate -m "Description"
-
-# Apply migration
-flask db upgrade
+For production, set these in PythonAnywhere:
+1. Go to "Web" tab → "WSGI configuration file"
+2. Add environment variables:
+```python
+import os
+os.environ['SECRET_KEY'] = 'your-production-secret-key'
+os.environ['FLASK_ENV'] = 'production'
 ```
 
-## Educational Use
+### 6. Troubleshooting
 
-This CRM system is designed for educational purposes and includes:
-- Clean, documented code
-- Common web development patterns
-- Database design best practices
-- User authentication
-- Responsive web design
+#### Common Issues:
+1. **Database locked**: Restart the web app
+2. **Module not found**: Ensure virtual environment is activated
+3. **Permission errors**: Check file permissions in PythonAnywhere files tab
 
-Students can learn:
-- Flask web development
-- SQLAlchemy ORM
-- Database design
-- Frontend/backend integration
-- Deployment practices
+#### Debug Mode:
+For debugging, temporarily enable debug mode in `config.py`:
+```python
+DEBUG = True
+```
 
-## License
+### 7. Production Considerations
 
-This project is open source and available under the MIT License.
+1. **Change default passwords immediately**
+2. **Use environment variables for secrets**
+3. **Enable HTTPS** (PythonAnywhere provides this automatically)
+4. **Regular database backups**
+5. **Monitor error logs** in PythonAnywhere
 
-## Contributing
+## Features Implemented
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+✅ **Customer Management**
+- View all customers
+- Search customers by name, email, phone
+- Customer detail view with KPIs
+- Contact history
+
+✅ **Order Management**
+- Global order overview (chronological)
+- Order search by number or customer
+- Order status tracking
+- Revenue calculations
+
+✅ **Contact Management**
+- Global contact timeline
+- Filter by contact channel (Phone, Email, Meeting, Chat)
+- Contact history per customer
+
+✅ **KPI Dashboard**
+- Total revenue per customer
+- Revenue by date range
+- Last contact tracking
+- Customer activity metrics
+
+## Next Steps
+
+1. Add customer/order/contact creation forms
+2. Implement user management
+3. Add reporting features
+4. Export functionality
+5. API endpoints for integration
 
 ## Support
 
-For questions or issues:
-1. Check the deployment guide
-2. Review the code documentation
-3. Check existing issues
-4. Create a new issue with detailed description
+For issues or questions:
+1. Check PythonAnywhere error logs
+2. Verify database setup
+3. Ensure all dependencies are installed
+4. Check file permissions
