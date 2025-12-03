@@ -34,7 +34,7 @@ python setup_database.py
 1. Zum "Web" Tab
 2. Klicke "New Web App"
 3. Wähle "Flask" + Python 3.12
-4. Als Source/Working Directory, ```bash /home/username/CRM_EKlein
+4. Source/Working Directory: ```bash /home/username/CRM_EKlein```
 5. Im WSGI config file (Web -> Runterscrollen "Code" -> WSGI Configuration file) und das folgende einfügen:
 
 ```python
